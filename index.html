@@ -3,9 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Greek Verbs</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Λέξεις</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="Λέξεις">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1c2b3a">
 <style>
   :root{
     --ink:#1c2b3a;
@@ -24,7 +28,7 @@
   body{
     background:linear-gradient(180deg,var(--ink) 0%, #16222f 100%);
     min-height:100vh;
-    font-family:'Inter',sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     color:var(--paper);
     display:flex;
     justify-content:center;
@@ -43,7 +47,7 @@
   header{padding-bottom:10px;}
   .title-row{display:flex;align-items:baseline;justify-content:space-between;}
   h1{
-    font-family:'Cormorant Garamond',serif;
+    font-family:Georgia,'Times New Roman',serif;
     font-weight:700;
     font-size:28px;
     margin:0;
@@ -138,7 +142,7 @@
     margin-bottom:14px;
   }
   .english{
-    font-family:'Cormorant Garamond',serif;
+    font-family:Georgia,'Times New Roman',serif;
     font-weight:700;
     font-size:38px;
     text-align:center;
@@ -160,7 +164,7 @@
     margin-bottom:14px;
   }
   .greek-primary{
-    font-family:'Cormorant Garamond',serif;
+    font-family:Georgia,'Times New Roman',serif;
     font-weight:700;
     font-size:34px;
     color:var(--aegean-deep);
@@ -206,7 +210,7 @@
     padding-top:2px;
   }
   .conj-table .form{
-    font-family:'Cormorant Garamond',serif;
+    font-family:Georgia,'Times New Roman',serif;
     font-weight:600;
     font-size:17px;
     color:var(--ink);
@@ -220,7 +224,7 @@
     margin-top:20px;
   }
   button{
-    font-family:'Inter',sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     border:none;
     cursor:pointer;
     -webkit-tap-highlight-color:transparent;
@@ -266,6 +270,46 @@
   }
   .link-btn:active{opacity:0.9;}
 
+  .deck-tabs{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .deck-tab{
+    flex:1;
+    padding:9px 6px;
+    border-radius:10px;
+    background:rgba(246,241,231,0.06);
+    border:1px solid rgba(246,241,231,0.12);
+    color:var(--paper-dim);
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.01em;
+    transition:background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .deck-tab.active{
+    background:rgba(201,151,61,0.18);
+    border-color:rgba(201,151,61,0.45);
+    color:var(--gold);
+  }
+  .deck-tab:active{transform:scale(0.97);}
+
+  .article{
+    color:var(--gold);
+    font-style:italic;
+    font-weight:600;
+    margin-right:8px;
+  }
+  .noun-note{
+    width:100%;
+    border-top:1px solid var(--line);
+    padding-top:10px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    opacity:0.6;
+    text-align:center;
+  }
+
   .toast{
     position:fixed;
     bottom:22px;
@@ -289,8 +333,12 @@
 <div class="app">
   <header>
     <div class="title-row">
-      <h1>Ρήματα <span class="accent">verbs</span></h1>
+      <h1>Λέξεις <span class="accent" id="deckAccent">verbs</span></h1>
       <div class="stats" id="statsLabel">— / —</div>
+    </div>
+    <div class="deck-tabs">
+      <button class="deck-tab" id="tabVerbs" data-deck="verbs">Ρήματα · Verbs</button>
+      <button class="deck-tab" id="tabNouns" data-deck="nouns">Ουσιαστικά · Nouns</button>
     </div>
   </header>
 
@@ -325,6 +373,7 @@
             </button>
           </div>
           <div class="conj-table" id="conjTable"></div>
+          <div class="noun-note" id="nounNote"></div>
         </div>
       </div>
     </div>
@@ -402,12 +451,128 @@ const VERBS = [
   {en:"wake up", gr:["ξυπνάω","ξυπνάς","ξυπνάει","ξυπνάμε","ξυπνάτε","ξυπνάνε"]}
 ];
 
+const NOUNS = [
+  {en:"person / human", article:"ο", gr:"άνθρωπος"},
+  {en:"man", article:"ο", gr:"άντρας"},
+  {en:"woman", article:"η", gr:"γυναίκα"},
+  {en:"child", article:"το", gr:"παιδί"},
+  {en:"friend (m)", article:"ο", gr:"φίλος"},
+  {en:"friend (f)", article:"η", gr:"φίλη"},
+  {en:"family", article:"η", gr:"οικογένεια"},
+  {en:"father", article:"ο", gr:"πατέρας"},
+  {en:"mother", article:"η", gr:"μητέρα"},
+  {en:"brother", article:"ο", gr:"αδερφός"},
+  {en:"sister", article:"η", gr:"αδερφή"},
+  {en:"son", article:"ο", gr:"γιος"},
+  {en:"daughter", article:"η", gr:"κόρη"},
+  {en:"grandfather", article:"ο", gr:"παππούς"},
+  {en:"grandmother", article:"η", gr:"γιαγιά"},
+
+  {en:"year / time", article:"ο", gr:"χρόνος"},
+  {en:"day", article:"η", gr:"μέρα"},
+  {en:"night", article:"η", gr:"νύχτα"},
+  {en:"hour", article:"η", gr:"ώρα"},
+  {en:"week", article:"η", gr:"εβδομάδα"},
+  {en:"month", article:"ο", gr:"μήνας"},
+  {en:"morning", article:"το", gr:"πρωί"},
+  {en:"afternoon", article:"το", gr:"απόγευμα"},
+  {en:"evening", article:"το", gr:"βράδυ"},
+  {en:"moment", article:"η", gr:"στιγμή"},
+
+  {en:"house", article:"το", gr:"σπίτι"},
+  {en:"room", article:"το", gr:"δωμάτιο"},
+  {en:"door", article:"η", gr:"πόρτα"},
+  {en:"window", article:"το", gr:"παράθυρο"},
+  {en:"table", article:"το", gr:"τραπέζι"},
+  {en:"chair", article:"η", gr:"καρέκλα"},
+  {en:"bed", article:"το", gr:"κρεβάτι"},
+  {en:"kitchen", article:"η", gr:"κουζίνα"},
+  {en:"bathroom", article:"το", gr:"μπάνιο"},
+  {en:"key", article:"το", gr:"κλειδί"},
+  {en:"phone", article:"το", gr:"τηλέφωνο"},
+  {en:"book", article:"το", gr:"βιβλίο"},
+  {en:"paper", article:"το", gr:"χαρτί"},
+  {en:"bag", article:"η", gr:"τσάντα"},
+  {en:"garment", article:"το", gr:"ρούχο"},
+
+  {en:"water", article:"το", gr:"νερό"},
+  {en:"bread", article:"το", gr:"ψωμί"},
+  {en:"milk", article:"το", gr:"γάλα"},
+  {en:"coffee", article:"ο", gr:"καφές"},
+  {en:"wine", article:"το", gr:"κρασί"},
+  {en:"food", article:"το", gr:"φαγητό"},
+  {en:"meat", article:"το", gr:"κρέας"},
+  {en:"fish", article:"το", gr:"ψάρι"},
+  {en:"fruit", article:"το", gr:"φρούτο"},
+  {en:"vegetable", article:"το", gr:"λαχανικό"},
+  {en:"sugar", article:"η", gr:"ζάχαρη"},
+  {en:"salt", article:"το", gr:"αλάτι"},
+  {en:"cheese", article:"το", gr:"τυρί"},
+  {en:"egg", article:"το", gr:"αυγό"},
+  {en:"breakfast", article:"το", gr:"πρωινό"},
+
+  {en:"city", article:"η", gr:"πόλη"},
+  {en:"country", article:"η", gr:"χώρα"},
+  {en:"street / road", article:"ο", gr:"δρόμος"},
+  {en:"school", article:"το", gr:"σχολείο"},
+  {en:"work / job", article:"η", gr:"δουλειά"},
+  {en:"office", article:"το", gr:"γραφείο"},
+  {en:"shop", article:"το", gr:"μαγαζί"},
+  {en:"restaurant", article:"το", gr:"εστιατόριο"},
+  {en:"hospital", article:"το", gr:"νοσοκομείο"},
+  {en:"church", article:"η", gr:"εκκλησία"},
+  {en:"sea", article:"η", gr:"θάλασσα"},
+  {en:"mountain", article:"το", gr:"βουνό"},
+  {en:"village", article:"το", gr:"χωριό"},
+  {en:"square", article:"η", gr:"πλατεία"},
+  {en:"airport", article:"το", gr:"αεροδρόμιο"},
+
+  {en:"head", article:"το", gr:"κεφάλι"},
+  {en:"hand / arm", article:"το", gr:"χέρι"},
+  {en:"foot / leg", article:"το", gr:"πόδι"},
+  {en:"eye", article:"το", gr:"μάτι"},
+  {en:"mouth", article:"το", gr:"στόμα"},
+  {en:"heart", article:"η", gr:"καρδιά"},
+  {en:"ear", article:"το", gr:"αυτί"},
+  {en:"face", article:"το", gr:"πρόσωπο"},
+  {en:"nose", article:"η", gr:"μύτη"},
+  {en:"tooth", article:"το", gr:"δόντι"},
+
+  {en:"life", article:"η", gr:"ζωή"},
+  {en:"world / people", article:"ο", gr:"κόσμος"},
+  {en:"thing", article:"το", gr:"πράγμα"},
+  {en:"idea", article:"η", gr:"ιδέα"},
+  {en:"problem", article:"το", gr:"πρόβλημα"},
+  {en:"money", article:"το", gr:"χρήμα"},
+  {en:"love", article:"η", gr:"αγάπη"},
+  {en:"hope", article:"η", gr:"ελπίδα"},
+  {en:"truth", article:"η", gr:"αλήθεια"},
+  {en:"dream", article:"το", gr:"όνειρο"},
+
+  {en:"car", article:"το", gr:"αυτοκίνητο"},
+  {en:"bus", article:"το", gr:"λεωφορείο"},
+  {en:"train", article:"το", gr:"τρένο"},
+  {en:"airplane", article:"το", gr:"αεροπλάνο"},
+  {en:"trip / journey", article:"το", gr:"ταξίδι"},
+  {en:"suitcase", article:"η", gr:"βαλίτσα"},
+  {en:"ticket", article:"το", gr:"εισιτήριο"},
+  {en:"bicycle", article:"το", gr:"ποδήλατο"},
+  {en:"harbor / port", article:"το", gr:"λιμάνι"},
+  {en:"map", article:"ο", gr:"χάρτης"}
+];
+
 const PRONOUNS = ["εγώ","εσύ","αυτός/ή/ό","εμείς","εσείς","αυτοί/ές/ά"];
-const STORAGE_KEY = "greek-verb-progress-v1";
 const MASTER_BOX = 4;
 
-let progress = {};      // id -> box (0-4)
-let queue = [];         // array of verb ids for this session
+const DECKS = {
+  verbs: { label:"verbs", type:"verb", items:VERBS, storageKey:"greek-verb-progress-v1" },
+  nouns: { label:"nouns", type:"noun", items:NOUNS, storageKey:"greek-noun-progress-v1" }
+};
+const ACTIVE_DECK_KEY = "greek-active-deck";
+
+let activeDeckId = "verbs";
+let progress = {};      // id -> box (0-4), scoped to the active deck
+let queue = [];         // array of item ids for this session
 let qPos = 0;
 let currentId = null;
 let flipped = false;
@@ -416,6 +581,7 @@ const cardEl = document.getElementById('card');
 const englishText = document.getElementById('englishText');
 const greekPrimary = document.getElementById('greekPrimary');
 const conjTable = document.getElementById('conjTable');
+const nounNote = document.getElementById('nounNote');
 const btnLearning = document.getElementById('btnLearning');
 const btnKnown = document.getElementById('btnKnown');
 const statsLabel = document.getElementById('statsLabel');
@@ -423,6 +589,9 @@ const progressFill = document.getElementById('progressFill');
 const masteredLabel = document.getElementById('masteredLabel');
 const learningLabel = document.getElementById('learningLabel');
 const toastEl = document.getElementById('toast');
+const deckAccent = document.getElementById('deckAccent');
+const tabVerbs = document.getElementById('tabVerbs');
+const tabNouns = document.getElementById('tabNouns');
 
 function shuffle(arr){
   const a = arr.slice();
@@ -433,9 +602,14 @@ function shuffle(arr){
   return a;
 }
 
+function currentDeck(){
+  return DECKS[activeDeckId];
+}
+
 function buildQueue(){
+  const deck = currentDeck();
   let ids = [];
-  VERBS.forEach((v,i)=>{
+  deck.items.forEach((v,i)=>{
     const box = progress[i] ?? 0;
     const weight = MASTER_BOX + 1 - box; // lower box = seen more often
     for(let k=0;k<weight;k++) ids.push(i);
@@ -444,27 +618,30 @@ function buildQueue(){
   qPos = 0;
 }
 
-async function loadProgress(){
+function loadProgress(){
+  const deck = currentDeck();
   try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) progress = JSON.parse(raw);
+    const raw = localStorage.getItem(deck.storageKey);
+    progress = raw ? JSON.parse(raw) : {};
   }catch(e){
     progress = {};
   }
 }
 
-async function saveProgress(){
+function saveProgress(){
+  const deck = currentDeck();
   try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    localStorage.setItem(deck.storageKey, JSON.stringify(progress));
   }catch(e){
     // storage unavailable — progress stays in-memory for this session
   }
 }
 
 function updateStats(){
-  const total = VERBS.length;
+  const deck = currentDeck();
+  const total = deck.items.length;
   let mastered = 0, learning = 0;
-  VERBS.forEach((v,i)=>{
+  deck.items.forEach((v,i)=>{
     const box = progress[i] ?? 0;
     if(box >= MASTER_BOX) mastered++;
     else if(box === 0) learning++;
@@ -475,6 +652,23 @@ function updateStats(){
   learningLabel.textContent = `${learning} still learning`;
 }
 
+function updateTabsUI(){
+  tabVerbs.classList.toggle('active', activeDeckId === 'verbs');
+  tabNouns.classList.toggle('active', activeDeckId === 'nouns');
+  deckAccent.textContent = currentDeck().label;
+}
+
+function switchDeck(id){
+  if(id === activeDeckId) return;
+  activeDeckId = id;
+  try{ localStorage.setItem(ACTIVE_DECK_KEY, id); }catch(e){}
+  updateTabsUI();
+  loadProgress();
+  updateStats();
+  buildQueue();
+  renderCard();
+}
+
 function showToast(msg){
   toastEl.textContent = msg;
   toastEl.classList.add('show');
@@ -483,6 +677,7 @@ function showToast(msg){
 }
 
 function renderCard(){
+  const deck = currentDeck();
   if(qPos >= queue.length){
     buildQueue();
     if(queue.length === 0) return;
@@ -493,23 +688,35 @@ function renderCard(){
   btnLearning.disabled = true;
   btnKnown.disabled = true;
 
-  const v = VERBS[currentId];
-  englishText.textContent = v.en;
+  const item = deck.items[currentId];
+  const mastered = (progress[currentId] ?? 0) >= MASTER_BOX;
+  englishText.textContent = item.en;
   document.getElementById('frontEyebrow').textContent =
-    (progress[currentId] ?? 0) >= MASTER_BOX ? 'verb · mastered' : 'verb';
+    (deck.type === 'verb' ? 'verb' : 'noun') + (mastered ? ' · mastered' : '');
 
-  greekPrimary.textContent = v.gr[0];
-  conjTable.innerHTML = '';
-  PRONOUNS.forEach((p,idx)=>{
-    const pronEl = document.createElement('div');
-    pronEl.className = 'pron';
-    pronEl.textContent = p;
-    const formEl = document.createElement('div');
-    formEl.className = 'form' + (idx===0 ? ' primary':'');
-    formEl.textContent = v.gr[idx];
-    conjTable.appendChild(pronEl);
-    conjTable.appendChild(formEl);
-  });
+  if(deck.type === 'verb'){
+    greekPrimary.textContent = item.gr[0];
+    conjTable.style.display = 'grid';
+    conjTable.innerHTML = '';
+    PRONOUNS.forEach((p,idx)=>{
+      const pronEl = document.createElement('div');
+      pronEl.className = 'pron';
+      pronEl.textContent = p;
+      const formEl = document.createElement('div');
+      formEl.className = 'form' + (idx===0 ? ' primary':'');
+      formEl.textContent = item.gr[idx];
+      conjTable.appendChild(pronEl);
+      conjTable.appendChild(formEl);
+    });
+    nounNote.style.display = 'none';
+    nounNote.textContent = '';
+  } else {
+    greekPrimary.innerHTML = `<span class="article">${item.article}</span>${item.gr}`;
+    conjTable.style.display = 'none';
+    conjTable.innerHTML = '';
+    nounNote.style.display = 'block';
+    nounNote.textContent = `gender: ${item.article === 'ο' ? 'masculine' : item.article === 'η' ? 'feminine' : 'neuter'}`;
+  }
 }
 
 function flipCard(){
@@ -522,12 +729,13 @@ function flipCard(){
 }
 
 function advance(known){
+  const deck = currentDeck();
   const box = progress[currentId] ?? 0;
   progress[currentId] = known ? Math.min(box+1, MASTER_BOX) : 0;
   saveProgress();
   updateStats();
   if(known && progress[currentId] === MASTER_BOX && box < MASTER_BOX){
-    showToast(`"${VERBS[currentId].en}" mastered ✦`);
+    showToast(`"${deck.items[currentId].en}" mastered ✦`);
   }
   qPos++;
   renderCard();
@@ -549,7 +757,11 @@ function speakCurrent(){
     showToast('Pronunciation not supported on this browser');
     return;
   }
-  const text = VERBS[currentId].gr[0].split(' / ')[0]; // just the primary form if there's an alt
+  const deck = currentDeck();
+  const item = deck.items[currentId];
+  const text = deck.type === 'verb'
+    ? item.gr[0].split(' / ')[0]
+    : `${item.article} ${item.gr}`;
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = 'el-GR';
@@ -571,16 +783,20 @@ cardEl.addEventListener('click', flipCard);
 btnLearning.addEventListener('click', (e)=>{ e.stopPropagation(); advance(false); });
 btnKnown.addEventListener('click', (e)=>{ e.stopPropagation(); advance(true); });
 
+tabVerbs.addEventListener('click', () => switchDeck('verbs'));
+tabNouns.addEventListener('click', () => switchDeck('nouns'));
+
 document.getElementById('shuffleBtn').addEventListener('click', ()=>{
   buildQueue();
   renderCard();
   showToast('Deck reshuffled');
 });
 
-document.getElementById('resetBtn').addEventListener('click', async ()=>{
-  if(confirm('Reset all progress? This clears every card back to "still learning".')){
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  const deck = currentDeck();
+  if(confirm(`Reset progress for ${deck.label}? This clears every card back to "still learning".`)){
     progress = {};
-    await saveProgress();
+    saveProgress();
     updateStats();
     buildQueue();
     renderCard();
@@ -594,12 +810,25 @@ document.addEventListener('keydown', (e)=>{
   if(e.code === 'ArrowRight' && flipped) advance(true);
 });
 
-(async function init(){
-  await loadProgress();
+(function init(){
+  try{
+    const saved = localStorage.getItem(ACTIVE_DECK_KEY);
+    if(saved && DECKS[saved]) activeDeckId = saved;
+  }catch(e){}
+  updateTabsUI();
+  loadProgress();
   updateStats();
   buildQueue();
   renderCard();
 })();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {
+      // offline caching unavailable — app still works online as normal
+    });
+  });
+}
 </script>
 </body>
 </html>
