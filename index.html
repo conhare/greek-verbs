@@ -152,13 +152,41 @@
     opacity:0.4;
     letter-spacing:0.05em;
   }
+  .greek-primary-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:14px;
+  }
   .greek-primary{
     font-family:'Cormorant Garamond',serif;
     font-weight:700;
     font-size:34px;
     color:var(--aegean-deep);
     text-align:center;
-    margin-bottom:14px;
+  }
+  .speak-btn{
+    flex-shrink:0;
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    background:rgba(47,102,144,0.1);
+    border:1px solid rgba(47,102,144,0.25);
+    color:var(--aegean-deep);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:transform 0.15s ease, background 0.15s ease;
+  }
+  .speak-btn:active{
+    transform:scale(0.9);
+    background:rgba(47,102,144,0.2);
+  }
+  .speak-btn.speaking{
+    background:rgba(201,151,61,0.25);
+    border-color:rgba(201,151,61,0.5);
+    color:var(--gold);
   }
   .conj-table{
     width:100%;
@@ -286,7 +314,16 @@
           <div class="tap-hint">tap to reveal</div>
         </div>
         <div class="face back">
-          <div class="greek-primary" id="greekPrimary">—</div>
+          <div class="greek-primary-row">
+            <div class="greek-primary" id="greekPrimary">—</div>
+            <button class="speak-btn" id="speakBtn" aria-label="Play pronunciation" title="Play pronunciation">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="3 9 8 9 13 4 13 20 8 15 3 15 3 9"></polygon>
+                <path d="M16 8a5 5 0 0 1 0 8"></path>
+                <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+              </svg>
+            </button>
+          </div>
           <div class="conj-table" id="conjTable"></div>
         </div>
       </div>
@@ -495,6 +532,40 @@ function advance(known){
   qPos++;
   renderCard();
 }
+
+let greekVoice = null;
+function pickGreekVoice(){
+  if(!('speechSynthesis' in window)) return;
+  const voices = window.speechSynthesis.getVoices();
+  greekVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('el')) || null;
+}
+if('speechSynthesis' in window){
+  pickGreekVoice();
+  window.speechSynthesis.onvoiceschanged = pickGreekVoice;
+}
+
+function speakCurrent(){
+  if(!('speechSynthesis' in window)){
+    showToast('Pronunciation not supported on this browser');
+    return;
+  }
+  const text = VERBS[currentId].gr[0].split(' / ')[0]; // just the primary form if there's an alt
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'el-GR';
+  if(greekVoice) utter.voice = greekVoice;
+  utter.rate = 0.85;
+  const btn = document.getElementById('speakBtn');
+  utter.onstart = () => btn.classList.add('speaking');
+  utter.onend = () => btn.classList.remove('speaking');
+  utter.onerror = () => btn.classList.remove('speaking');
+  window.speechSynthesis.speak(utter);
+}
+
+document.getElementById('speakBtn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  speakCurrent();
+});
 
 cardEl.addEventListener('click', flipCard);
 btnLearning.addEventListener('click', (e)=>{ e.stopPropagation(); advance(false); });
